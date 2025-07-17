@@ -26,6 +26,14 @@ def load_image(filename):
 def unique_mask_values(idx, mask_dir, mask_suffix):
     mask_file = list(mask_dir.glob(idx + mask_suffix + '.*'))[0]
     mask = np.asarray(load_image(mask_file))
+    broken = False
+    # for i in mask[0]:
+    #     if i != 0 and i != 1:
+    #         broken = True
+    #         print(mask_file, "is bad")
+    #         print(i)
+    #         break
+    
     if mask.ndim == 2:
         return np.unique(mask)
     elif mask.ndim == 3:
@@ -39,6 +47,7 @@ class BasicDataset(Dataset):
     def __init__(self, images_dir: str, mask_dir: str, scale: float = 1.0, mask_suffix: str = ''):
         self.images_dir = Path(images_dir)
         self.mask_dir = Path(mask_dir)
+        print(self.mask_dir)
         assert 0 < scale <= 1, 'Scale must be between 0 and 1'
         self.scale = scale
         self.mask_suffix = mask_suffix

@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import glob
 
 import numpy as np
 import torch
@@ -52,11 +53,25 @@ def get_args():
     return parser.parse_args()
 
 
-def get_output_filenames(args):
-    def _generate_name(fn):
-        return f'{os.path.splitext(fn)[0]}_OUT.png'
+def get_output_filenames(input_names, output_path):
+    # def _generate_name(fn):
+    #     return f'{os.path.splitext(fn)[0]}_OUT.png'
 
-    return args.output or list(map(_generate_name, args.input))
+    # return list(map(_generate_name, args.input))
+
+    # cbus testing imgs from AJ
+    # output_names = []
+    # for name in input_names:
+    #     id = "prediction" + name.split('_')[1]
+    #     output_names.append(os.path.join(output_path[0], id))
+    # return output_names
+
+    # synthetic training imgs
+    output_names = []
+    for name in input_names:
+        id = "prediction" + name.split('\\')[3]
+        output_names.append(os.path.join(output_path[0], id))
+    return output_names
 
 
 def mask_to_image(mask: np.ndarray, mask_values):
@@ -79,9 +94,15 @@ def mask_to_image(mask: np.ndarray, mask_values):
 if __name__ == '__main__':
     args = get_args()
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-
-    in_files = args.input
-    out_files = get_output_filenames(args)
+    in_files = []
+    for path in args.input:
+        if os.path.isdir(path):
+            in_files.extend(glob.glob(os.path.join(path, '*.png')))
+        else:
+            in_files.append(path)
+    # in_files = args.input
+    print(in_files)
+    out_files = get_output_filenames(in_files, args.output)
 
     net = UNet(n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
 
